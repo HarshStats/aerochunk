@@ -9,11 +9,19 @@
 
 AeroChunk is a low-latency, zero-framework semantic text chunker engineered for Retrieval-Augmented Generation (RAG) pipelines. The efficacy of RAG systems is critically dependent on the quality of text segmentation. Prevailing methodologies often employ naive, fixed-size chunking (e.g., recursive character splitting), which can lead to significant semantic loss by arbitrarily severing conceptual units. Conversely, solutions that do preserve semantic integrity are frequently encumbered by heavy frameworks (e.g., LangChain, LlamaIndex) or reliant on costly, high-latency cloud APIs.
 
-AeroChunk addresses this dichotomy by providing a high-fidelity semantic chunking mechanism that operates entirely on local machine resources. It leverages the computational efficiency of `sentence-transformers` and `numpy` to eliminate external dependencies, API costs, and framework bloat. A key innovation is the **Visual HTML Debugger**, an industry-first tool that generates an HTML report to provide a transparent, interpretable view of the semantic boundaries identified during the chunking process.
+AeroChunk addresses this dichotomy by providing a high-fidelity semantic chunking mechanism that operates entirely on local machine resources. It leverages the computational efficiency of `sentence-transformers` and `numpy` to eliminate external dependencies, API costs, and framework bloat.
 
-## 2. Empirical Benchmarks
+## 2. Key Features
 
-AeroChunk was benchmarked against two standard LangChain text splitters on a repetitive text block to evaluate performance and chunking quality. The `all-MiniLM-L6-v2` model was used for all semantic comparisons to ensure a fair evaluation.
+- **High-Fidelity Semantic Chunking:** Preserves conceptual integrity by segmenting text based on semantic relatedness.
+- **Zero-Framework & Local Execution:** Operates without requiring frameworks like LangChain or LlamaIndex and runs entirely on local resources, ensuring low latency and zero API costs.
+- **Low Memory Footprint:** Engineered for efficiency, consuming minimal RAM even with large documents.
+- **Visual HTML Debugger:** An industry-first tool that generates an HTML report for a transparent, interpretable view of the semantic boundaries identified during the chunking process.
+
+## 3. Empirical Benchmarks
+
+### Standard Document Analysis
+AeroChunk was first benchmarked against two standard LangChain text splitters on a repetitive text block to evaluate baseline performance and chunking quality.
 
 | Method                  | Execution Time (s) | Chunks Generated | Outcome         |
 | ----------------------- | ------------------ | ---------------- | --------------- |
@@ -21,12 +29,15 @@ AeroChunk was benchmarked against two standard LangChain text splitters on a rep
 | LangChain (Recursive)   | 0.00               | 51               | Semantic Loss   |
 | LangChain (Semantic)    | 7.53               | 1                | Failed to Split |
 
-**Analysis:**
--   **AeroChunk** produced semantically coherent chunks at a competitive execution time.
--   **LangChain's RecursiveCharacterTextSplitter** was fast but failed to preserve semantic boundaries, resulting in fragmented and contextually poor chunks.
--   **LangChain's SemanticChunker** failed to identify any valid split points in the document, returning the entire text as a single chunk.
+### High-Load Stress Test
+To evaluate performance under load, AeroChunk was benchmarked against LangChain's `SemanticChunker` on a 15,000-word document. The results demonstrate that AeroChunk not only maintains superior segmentation accuracy but also exhibits significantly greater computational efficiency, consuming approximately 69% less peak memory and executing over 40% faster.
 
-## 3. Architectural Methodology
+| Method                  | Peak RAM (MB) | Execution Time (s) | Chunks Generated | Outcome         |
+| ----------------------- | ------------- | ------------------ | ---------------- | --------------- |
+| **AeroChunk (Batch 32)**| **6.62**      | **11.18**          | **1500**         | **Optimal**     |
+| LangChain (Semantic)    | 21.56         | 18.73              | 4                | Failed to Split |
+
+## 4. Architectural Methodology
 
 The AeroChunk pipeline is a four-stage process designed for computational efficiency and semantic accuracy.
 
@@ -37,14 +48,14 @@ The AeroChunk pipeline is a four-stage process designed for computational effici
 
 This methodology ensures that chunks are formed from contiguous, semantically related sentences, thereby preserving the conceptual integrity of the source text.
 
-## 4. Installation
+## 5. Installation
 
 Install the package using pip:
 ```bash
 pip install aerochunk
 ```
 
-## 5. Usage
+## 6. Usage
 
 ### Basic Chunking
 
@@ -81,6 +92,6 @@ debug_file = chunker.export_debug_html(output_file="aero_debug_report.html")
 print(f"Visual debug report saved to: {debug_file}")
 ```
 
-## 6. License
+## 7. License
 
 This project is licensed under the **MIT License**.

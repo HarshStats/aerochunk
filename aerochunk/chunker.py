@@ -4,24 +4,36 @@ import re
 
 class AeroChunker:
     def __init__(self, model_name='all-MiniLM-L6-v2', threshold=0.5):
-        # Loads a tiny, fast local model. No API keys needed.
         self.model = SentenceTransformer(model_name)
         self.threshold = threshold
+        self.last_chunks = []
+        self.last_drops = []
 
     def _split_sentences(self, text):
         return [s.strip() for s in re.split(r'(?<=[.!?]) +', text) if s]
 
-    def chunk_text(self, text):
-        sentences = self._split_sentences(text)
-        if not sentences: return []
+    def chunk_text(self, text, batch_size=32):
+        # 1. Error Handling: Input Validation
+        if not isinstance(text, str):
+            raise TypeError(f"Expected a string, but got {type(text).__name__}")
+        
+        if not text.strip():
+            return []
 
-        embeddings = self.model.encode(sentences)
+        sentences = self._split_sentences(text)
+        if not sentences: 
+            return []
+
+        # 2. Memory Management: Batching
+        # By explicitly setting batch_size, we prevent RAM overflow on 1000+ page PDFs
+        embeddings = self.model.encode(sentences, batch_size=batch_size)
+        
         chunks = []
         current_chunk = [sentences[0]]
-        similarity_drops = [] # Track this for the visual debugger
+        similarity_drops = [] 
 
         for i in range(1, len(sentences)):
-            # Calculate cosine similarity between consecutive sentences
+            # Fast mathematical distance calculation
             sim = np.dot(embeddings[i-1], embeddings[i]) / (np.linalg.norm(embeddings[i-1]) * np.linalg.norm(embeddings[i]))
             
             if sim >= self.threshold:
@@ -39,7 +51,9 @@ class AeroChunker:
         return chunks
 
     def export_debug_html(self, output_file="debug_aerochunk.html"):
-        """The Unique Feature: Generates a visual report of the chunking decisions."""
+        if not self.last_chunks:
+            raise ValueError("No chunks found. Run chunk_text() before exporting debug data.")
+
         html = "<html><body style='font-family: Arial; line-height: 1.6;'>"
         html += "<h2>AeroChunk Visual Debugger</h2>"
         
@@ -50,10 +64,11 @@ class AeroChunker:
             
             if idx < len(self.last_drops):
                 html += f"<div style='text-align: center; color: red; font-size: 0.9em;'>"
-                html += f"↓ Semantic Similarity Drop (Score: {self.last_drops[idx]:.2f}) ↓</div><br>"
+                html += f"&#8595; Semantic Similarity Drop (Score: {self.last_drops[idx]:.2f}) &#8595;</div><br>"
 
         html += "</body></html>"
         
-        with open(output_file, "w",encoding="utf-8") as f:
+        # Using HTML entity &#8595; instead of the raw arrow character to avoid any Windows encoding errors
+        with open(output_file, "w", encoding="utf-8") as f:
             f.write(html)
         return output_file

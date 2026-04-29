@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aerochunk" 
-version = "0.1.0"
+version = "0.1.1" # Bumped version for the new release
 authors = [{ name="Harsh Rana" }]
 description = "A zero-framework, low-latency semantic chunker with visual HTML debugging."
 readme = "README.md"
@@ -13,3 +13,17 @@ dependencies = [
     "sentence-transformers>=2.0.0",
     "numpy>=1.21.0"
 ]
+# NEW: Adds professional tags to the PyPI page
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# NEW: Adds the sidebar links on PyPI
+[project.urls]
+"Homepage" = "https://github.com/HarshStats/aerochunk"
+"Bug Tracker" = "https://github.com/HarshStats/aerochunk/issues"

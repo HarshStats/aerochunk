@@ -1,0 +1,6 @@
+__pycache__/
+build/
+dist/
+*.egg-info/
+benchmark_results.png
+aero_debug.html

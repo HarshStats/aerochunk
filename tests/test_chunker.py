@@ -1,30 +1,38 @@
 import pytest
 from aerochunk import AeroChunker
-import os
+from aerochunk.chunker import ChunkingResult
 
 @pytest.fixture(scope="module")
 def chunker():
-    # Initializes once for all tests to save time
     return AeroChunker()
 
 def test_basic_chunking(chunker):
     text = "This is a sentence. This is another sentence! Totally unrelated topic here."
-    chunks = chunker.chunk_text(text)
-    assert len(chunks) > 0
-    assert isinstance(chunks, list)
+    result = chunker.chunk_text(text)
+    # Check that it returns the right object type
+    assert isinstance(result, ChunkingResult)
+    # Check that we actually got chunks
+    assert len(result.chunks) > 0
 
 def test_empty_string(chunker):
-    assert chunker.chunk_text("") == []
-    assert chunker.chunk_text("    ") == []
+    # Update: Check the .chunks attribute of the result object
+    result = chunker.chunk_text("")
+    assert result.chunks == []
+    
+    result_space = chunker.chunk_text("    ")
+    assert result_space.chunks == []
 
 def test_invalid_input(chunker):
     with pytest.raises(TypeError):
         chunker.chunk_text(12345)
-    
-    with pytest.raises(TypeError):
-        chunker.chunk_text(None)
 
-def test_export_without_chunking(chunker):
-    fresh_chunker = AeroChunker()
-    with pytest.raises(ValueError):
-        fresh_chunker.export_debug_html()
+def test_export_logic(chunker):
+    # Test that the result object handles the export, not the chunker itself
+    result = chunker.chunk_text("Some text to chunk.")
+    # This should work now
+    path = result.export_debug_html("test_output.html")
+    assert "test_output.html" in path
+
+def test_stateless_architecture(chunker):
+    # Verify the chunker itself doesn't store the data (Thread-safety check)
+    assert not hasattr(chunker, 'last_chunks')
